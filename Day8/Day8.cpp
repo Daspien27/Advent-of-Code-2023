@@ -65,13 +65,16 @@ auto process_day8_part1(const day8_parse& parse) {
     return path.size() - 1;
 }
 
+
+
+// Too slow, need more clever of an implementation to complete.
 auto process_day8_part2(const day8_parse& parse) {
 
-    std::vector<std::vector<std::string>> ghost_path;
+    std::vector<std::string> ghost_path;
 
     for (const auto& p : parse.paths) {
         if (p.first[2] == 'A') {
-            ghost_path.emplace_back(std::vector{ p.first });
+            ghost_path.emplace_back(p.first);
         }
     }
 
@@ -88,15 +91,15 @@ auto process_day8_part2(const day8_parse& parse) {
 
 
     int step = 0;
-    while (std::any_of(ghost_path.begin(), ghost_path.end(), [](const auto& path) { return path.back()[2] != 'Z'; })) {
+    while (std::any_of(ghost_path.begin(), ghost_path.end(), [](const auto& path) { return path[2] != 'Z'; })) {
         char instruction = parse.instructions[step++ % parse.instructions.size()];
 
         for (auto& p : ghost_path) {
-            p.push_back(next_path(p.back(), instruction));
+            p = next_path(p, instruction);
         }
     }
 
-    return ghost_path.back().size() - 1;
+    return step;
 }
 
 int main()
