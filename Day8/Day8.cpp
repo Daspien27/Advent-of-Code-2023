@@ -67,16 +67,9 @@ auto process_day8_part1(const day8_parse& parse) {
 
 
 
-// Too slow, need more clever of an implementation to complete.
 auto process_day8_part2(const day8_parse& parse) {
 
-    std::vector<std::string> ghost_path;
-
-    for (const auto& p : parse.paths) {
-        if (p.first[2] == 'A') {
-            ghost_path.emplace_back(p.first);
-        }
-    }
+    
 
     auto next_path = [&](const auto& path, const auto& instruction) {
         switch (instruction) {
@@ -89,17 +82,45 @@ auto process_day8_part2(const day8_parse& parse) {
         }
     };
 
+    std::vector<std::vector<std::string>> paths;
+    for (const auto& p : parse.paths) {
+        paths.emplace_back(std::vector{ p.first });
+    }
+
 
     int step = 0;
-    while (std::any_of(ghost_path.begin(), ghost_path.end(), [](const auto& path) { return path[2] != 'Z'; })) {
+    while (std::any_of(paths.begin(), paths.end(), [](const auto& path) { return path.back()[2] != 'Z'; })) {
         char instruction = parse.instructions[step++ % parse.instructions.size()];
 
-        for (auto& p : ghost_path) {
-            p = next_path(p, instruction);
+        for (auto& p : paths) {
+            if (p.back()[2] != 'Z'){
+                p.push_back(next_path(p.back(), instruction));
+            }
         }
     }
 
-    return step;
+    std::unordered_map<std::string, unsigned long long> steps_to_next_Z;
+
+    for (const auto& p : paths) {
+        steps_to_next_Z[p.front()] = p.size() - 1;
+    }
+
+
+    std::vector<std::string> ghost_path;
+
+    for (const auto& p : parse.paths) {
+        if (p.first[2] == 'A') {
+            ghost_path.push_back(p.first);
+        }
+    }
+
+    auto least_steps = std::accumulate(ghost_path.begin(), ghost_path.end(), 1ull, [&steps_to_next_Z](auto lcm, const auto& p){
+        return std::lcm(lcm, steps_to_next_Z.at(p));
+    });
+
+
+
+    return least_steps;
 }
 
 int main()
